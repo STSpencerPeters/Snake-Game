@@ -38,7 +38,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        thread.running = false
+        stopThread()
     }
 
     fun update() {
@@ -58,7 +58,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
             spawnFood()
         } else {
             snake.add(0, head)
-            snake.removeLast()
+            snake.removeAt(snake.size - 1)
         }
 
         if (snake.drop(1).contains(head) || head.x < 0 || head.y < 0 ||
@@ -153,6 +153,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
     }
 
     fun resetGame() {
+        stopThread() // stop previous thread if any
         snake = mutableListOf(Point(5, 5))
         direction = "RIGHT"
         food = Point(10, 10)
@@ -161,5 +162,12 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         thread = GameThread(holder, this)
         thread.running = true
         thread.start()
+    }
+
+    fun stopThread() {
+        if (thread.isAlive) {
+            thread.running = false
+            try { thread.join() } catch (e: InterruptedException) {}
+        }
     }
 }
